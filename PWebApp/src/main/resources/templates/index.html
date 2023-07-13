@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>File Sharing App</title>
+    <!-- Include any necessary CSS or JavaScript files -->
+</head>
+<body>
+<h1>File Sharing App</h1>
+
+<div class="upload-form">
+    <form action="#" th:action="@{/files/upload}" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" required>
+        <button type="submit">Upload</button>
+    </form>
+</div>
+
+<div class="file-list">
+    <h2>Uploaded Files</h2>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Actions</th>
+        </tr>
+        <tbody id="file-list-container"></tbody>
+    </table>
+</div>
+
+<div class="view-files-button">
+    <button onclick="fetchFileList()">View All Files</button>
+</div>
+
+<!-- Include any necessary JavaScript code -->
+<script>
+        function fetchFileList() {
+    fetch('/files/list')
+        .then(response => response.json())
+        .then(files => {
+            const fileListContainer = document.getElementById('file-list-container');
+            fileListContainer.innerHTML = '';
+
+            files.forEach(file => {
+                const row = document.createElement('tr');
+                const nameCell = document.createElement('td');
+                const nameLink = document.createElement('a');
+                const downloadButton = document.createElement('button'); // Create download button
+
+                nameLink.href = '#';
+                nameLink.textContent = file.name;
+
+                nameLink.addEventListener('click', function () {
+                    viewFile(file.id, file.name);
+                });
+
+                nameCell.appendChild(nameLink);
+                row.appendChild(nameCell);
+                fileListContainer.appendChild(row);
+
+                row.setAttribute('data-file-id', file.id);
+
+                // Add download button to each row
+                const downloadCell = document.createElement('td');
+                downloadButton.textContent = 'Download';
+                downloadButton.addEventListener('click', function () {
+                    downloadFile(file.id, file.name);
+                });
+
+                downloadCell.appendChild(downloadButton);
+                row.appendChild(downloadCell);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching file list:', error);
+        });
+}
+
+function viewFile(fileId, fileName) {
+    const downloadUrl = '/files/download/' + fileId;
+    window.open(downloadUrl, '_blank');
+}
+
+function downloadFile(fileId, fileName) {
+    const downloadUrl = '/files/download/' + fileId;
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = fileName;
+    link.click();
+}
+    </script>
+</body>
+</html>
